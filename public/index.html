@@ -41,9 +41,9 @@
 
         // Авторизация
         function auth() {
-            const clientId = 'ВАШ_CLIENT_ID';
+            const clientId = '19d86dd0-23f9-43e1-a716-c928ebcc806c';
             const redirectUri = encodeURIComponent(window.location.origin + '/callback.html');
-            const authUrl = `https://ВАШ_ДОМЕН.amocrm.ru/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}`;
+            const authUrl = `https://temirlanbaisalov35.amocrm.ru/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}`;
             window.open(authUrl, 'authWindow', 'width=600,height=800');
         }
 
@@ -111,8 +111,8 @@
                 const res = await fetch(`/api/proxy?path=/oauth2/access_token`, {
                     method: 'POST',
                     body: JSON.stringify({
-                        client_id: 'ВАШ_CLIENT_ID',
-                        client_secret: 'ВАШ_CLIENT_SECRET',
+                        client_id: '19d86dd0-23f9-43e1-a716-c928ebcc806c',
+                        client_secret: 'z6lKS1zErXWbz8N7INhe7j3AA50GcQkoBql2hFAy5wDOroU6xUndJK5ofNKeaSx4',
                         grant_type: 'authorization_code',
                         code,
                         redirect_uri: window.location.origin + '/callback.html'

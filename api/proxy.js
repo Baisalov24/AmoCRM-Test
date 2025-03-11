@@ -2,7 +2,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = (req, res) => {
   const proxy = createProxyMiddleware({
-    target: 'https://ВАШ_ДОМЕН.amocrm.ru',
+    target: 'https://temirlanbaisalov35.amocrm.ru',
     changeOrigin: true,
     pathRewrite: (path) => req.query.path
   });
