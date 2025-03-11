@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code) {
+        window.opener.postMessage({ type: 'amo_auth_code', code }, '*');
+        window.close();
+    }
+</script>
+</html>
