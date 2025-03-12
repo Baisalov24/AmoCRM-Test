@@ -1,146 +1,121 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8">
     <title>Интеграция с amoCRM</title>
     <style>
-      .table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      .table th,
-      .table td {
-        border: 1px solid #ddd;
-        padding: 10px;
-      }
-      .card {
-        cursor: pointer;
-      }
-      .loader {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .table th, .table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .loader { 
+            border: 4px solid #f3f3f3; 
+            border-top: 4px solid #3498db; 
+            border-radius: 50%; 
+            width: 30px; 
+            height: 30px; 
+            animation: spin 1s linear infinite;
         }
-        100% {
-          transform: rotate(360deg);
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
         }
-      }
-      .status-circle {
-        width: 15px;
-        height: 15px;
-        border-radius: 50%;
-      }
+        .status-circle { width: 15px; height: 15px; border-radius: 50%; }
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; }
     </style>
-  </head>
-  <body>
-    <h1>Сделки в amoCRM</h1>
-    <button onclick="auth()">Авторизоваться</button>
+</head>
+<body>
+    <button onclick="auth()">Авторизоваться через amoCRM</button>
     <table class="table">
-      <thead>
-        <tr>
-          <th>Название</th>
-          <th>Бюджет</th>
-          <th>ID</th>
-        </tr>
-      </thead>
-      <tbody id="deals"></tbody>
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Бюджет</th>
+                <th>ID</th>
+            </tr>
+        </thead>
+        <tbody id="deals"></tbody>
     </table>
 
     <script>
-      let ACCESS_TOKEN = null;
+        let ACCESS_TOKEN = null;
 
-      // Авторизация
-      function auth() {
-        const clientId = "19d86dd0-23f9-43e1-a716-c928ebcc806c";
-        const redirectUri = encodeURIComponent(
-          window.location.origin + "/callback.html"
-        );
-        const authUrl = `https://temirlanbaisalov35.amocrm.ru/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}`;
-        window.open(authUrl, "authWindow", "width=600,height=800");
-      }
+        // Авторизация
+        function auth() {
+            const redirectUri = encodeURIComponent(window.location.origin + '/callback.html');
+            const authUrl = `https://temirlanbaisalov35.amocrm.ru/oauth2/authorize?client_id=19d86dd0-23f9-43e1-a716-c928ebcc806c&redirect_uri=${redirectUri}`;
+            window.open(authUrl, 'authWindow', 'width=600,height=800');
+        }
 
-      // Получение сделок
-      async function fetchDeals() {
-        const res = await fetch("/api/proxy?path=/api/v4/leads", {
-          headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-        });
-        const data = await res.json();
-        return data._embedded.leads;
-      }
+        // Получение сделок
+        async function fetchDeals() {
+            const res = await fetch('/api/proxy?path=/api/v4/leads', {
+                headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+            });
+            const data = await res.json();
+            return data._embedded.leads;
+        }
 
-      // Рендер сделок
-      async function renderDeals() {
-        const deals = await fetchDeals();
-        const tbody = document.getElementById("deals");
-
-        let counter = 0;
-        const processChunk = async () => {
-          const chunk = deals.splice(0, 3);
-          chunk.forEach((deal) => {
-            tbody.innerHTML += `
+        // Рендер сделок
+        async function renderDeals() {
+            const deals = await fetchDeals();
+            const tbody = document.getElementById('deals');
+            tbody.innerHTML = '';
+            
+            let counter = 0;
+            const processChunk = async () => {
+                const chunk = deals.splice(0, 3);
+                chunk.forEach(deal => {
+                    tbody.innerHTML += `
                         <tr class="card" onclick="showDetails(${deal.id})">
                             <td>${deal.name}</td>
                             <td>${deal.price || 0} руб.</td>
                             <td>${deal.id}</td>
                         </tr>
                     `;
-          });
-          counter++;
-          if (deals.length > 0) setTimeout(processChunk, 1000);
-        };
+                });
+                if (deals.length > 0) setTimeout(processChunk, 1000);
+            };
+            processChunk();
+        }
 
-        processChunk();
-      }
-
-      // Детали сделки
-      async function showDetails(dealId) {
-        const res = await fetch(`/api/proxy?path=/api/v4/leads/${dealId}`, {
-          headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-        });
-        const deal = await res.json();
-
-        const statusColor = getStatusColor(deal.closest_task_at);
-        alert(`
+        // Получение деталей сделки
+        async function showDetails(dealId) {
+            const res = await fetch(`/api/proxy?path=/api/v4/leads/${dealId}`, {
+                headers: { Authorization: `Bearer ${ACCESS_TOKEN}` }
+            });
+            const deal = await res.json();
+            
+            const statusColor = getStatusColor(deal.closest_task_at);
+            alert(`
                 Название: ${deal.name}\n
                 ID: ${deal.id}\n
-                Дата: ${new Date(deal.created_at).toLocaleDateString("ru-RU")}\n
-                Статус: ${statusColor}
+                Дата: ${new Date(deal.created_at).toLocaleDateString('ru-RU')}\n
+                Статус задачи: ${statusColor}
             `);
-      }
-
-      // Цвет статуса
-      function getStatusColor(taskDate) {
-        if (!taskDate) return "🔴 Нет задачи";
-        const today = new Date();
-        const diff = (new Date(taskDate) - today) / (1000 * 3600 * 24);
-        return diff < 0
-          ? "🔴 Просрочено"
-          : diff === 0
-          ? "🟢 Сегодня"
-          : "🟡 Позже";
-      }
-
-      // Обработчик сообщений от callback.html
-      window.addEventListener("message", async (e) => {
-        if (e.data.type === "amo_auth_code") {
-          const code = e.data.code;
-          const res = await fetch("/api/auth", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code }), // Отправляем только код
-          });
-          const data = await res.json();
-          ACCESS_TOKEN = data.access_token;
-          renderDeals();
         }
-      });
+
+        // Цвет статуса
+        function getStatusColor(taskDate) {
+            if (!taskDate) return '🔴 Нет задачи';
+            const today = new Date();
+            const diff = (new Date(taskDate) - today) / (1000 * 3600 * 24);
+            return diff < 0 ? '🔴 Просрочено' : diff === 0 ? '🟢 Сегодня' : '🟡 Позже';
+        }
+
+        // Получение токена через бэкенд
+        window.addEventListener('message', async (e) => {
+            if (e.data.type === 'amo_auth_code') {
+                const code = e.data.code;
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const data = await res.json();
+                ACCESS_TOKEN = data.access_token;
+                renderDeals();
+            }
+        });
     </script>
-  </body>
+</body>
 </html>
