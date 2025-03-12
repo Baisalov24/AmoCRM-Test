@@ -41,8 +41,7 @@
 
         // Авторизация
         function auth() {
-            const redirectUri = encodeURIComponent(window.location.origin + '/callback.html');
-            const authUrl = `https://temirlanbaisalov35.amocrm.ru/oauth2/authorize?client_id=19d86dd0-23f9-43e1-a716-c928ebcc806c&redirect_uri=${redirectUri}`;
+            const authUrl = `https://temirlanbaisalov35.amocrm.ru/oauth2/authorize?client_id=19d86dd0-23f9-43e1-a716-c928ebcc806c&redirect_uri=${encodeURIComponent('https://amo-crm-test-five.vercel.app/callback.html')}`;
             window.open(authUrl, 'authWindow', 'width=600,height=800');
         }
 
